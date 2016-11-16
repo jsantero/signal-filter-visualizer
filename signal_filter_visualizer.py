@@ -5,6 +5,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 from widgets import MainWidget
+from dialogs import FileOpenDlg
 
 
 class MainWindow(QMainWindow):
@@ -31,7 +32,8 @@ class MainWindow(QMainWindow):
         fileMenu.addAction(fileQuitAction)
 
     def openFile(self):
-        print("foo")
+        dlg = FileOpenDlg()
+        dlg.exec_()
 
     def quit(self):
         self.close()
