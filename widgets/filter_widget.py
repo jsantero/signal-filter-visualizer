@@ -10,6 +10,7 @@ from .filter_variants import Butter
 from .filter_variants import Cheby1
 from .filter_variants import Cheby2
 from .filter_variants import Elliptic
+from .filter_variants import Rolling
 
 
 class Filter(QWidget):
@@ -27,11 +28,13 @@ class Filter(QWidget):
         cheby1 = Cheby1()
         cheby2 = Cheby2()
         elliptic = Elliptic()
+        rolling = Rolling()
         self.stackedWidget.addWidget(bessel)
         self.stackedWidget.addWidget(butter)
         self.stackedWidget.addWidget(cheby1)
         self.stackedWidget.addWidget(cheby2)
         self.stackedWidget.addWidget(elliptic)
+        self.stackedWidget.addWidget(rolling)
 
         # Pairs the filter widget to a string so stackedWidget can be updated
         self.filterDispatcher = {
@@ -39,7 +42,8 @@ class Filter(QWidget):
             'Butterworth': butter,
             'Chebyshev type I': cheby1,
             'Chebyshev type II': cheby2,
-            'Elliptic (Cauer)': elliptic
+            'Elliptic (Cauer)': elliptic,
+            'Rolling window': rolling
         }
 
         filterLabel = QLabel("Filter")
@@ -55,6 +59,7 @@ class Filter(QWidget):
         cheby1.valuesChanged.connect(self.updateUi)
         cheby2.valuesChanged.connect(self.updateUi)
         elliptic.valuesChanged.connect(self.updateUi)
+        rolling.valuesChanged.connect(self.updateUi)
 
         grid = QGridLayout()
         grid.addWidget(filterLabel, 0, 0, 1, 1)
