@@ -25,7 +25,7 @@ class Rolling(QWidget):
         self.samplingRateBox.setSuffix(" Hz")
         self.windowLengthBox = QSpinBox()
         self.windowLengthBox.setRange(1, 10000000)
-        self.windowLengthBox.setValue(100)
+        self.windowLengthBox.setValue(10)
 
         self.typeComboBox.currentIndexChanged.connect(self.updateUi)
         self.samplingRateBox.valueChanged.connect(self.updateUi)
@@ -60,9 +60,9 @@ class Rolling(QWidget):
             signal = list(sma.roll(y, end=True))
         elif _type == 'rms':
             # TODO DO rms
-            pass
+            signal = None
         elif _type == 'median':
             # TODO DO median
-            pass
+            signal = None
         data = (x, signal)
         return data
