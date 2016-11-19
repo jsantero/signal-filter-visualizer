@@ -9,7 +9,7 @@ GUI is built with PyQt5, because it is powerful, versatile and very easy to use.
 
 Signal Filter Visualizer features:
 * Signal generation
-* Import signal from file (currently unimplemented)
+* Import signal from file
 * Noise generation
 * Filtering
  * Butterworth
