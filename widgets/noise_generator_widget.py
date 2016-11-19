@@ -17,7 +17,7 @@ class NoiseGenerator(QWidget):
 
         self.checkBox = QCheckBox()
         self.checkBox.setTristate(False)
-        self.checkBox.setChecked(True)
+        self.checkBox.setChecked(False)
         self.meanBox = QDoubleSpinBox()
         self.meanBox.setRange(-1000000.0, 1000000.0)
         self.meanBox.setDecimals(4)
