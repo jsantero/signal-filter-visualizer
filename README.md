@@ -21,38 +21,20 @@ Signal Filter Visualizer features:
 
 # Installation instructions
 
-Clone the repository.
-> git clone https://github.com/jsantero/signal-filter-visualizer.git
+1. Install Anaconda 4.2.0 for Windows (Python 3.5 version), https://www.continuum.io/downloads
 
-Install the required packages with pip.
-> pip install PACKAGENAME
+2. Open Command Prompt and create new conda environment: conda create -n signals python=3.5 pyqt=5.6 numpy scipy matplotlib
 
-If you're unfamiliar with pip please see
-https://packaging.python.org/installing/
+3. Activate the new environment as instructed by conda: activate signals
 
-Using a virtual environment is recommended. Please see
-https://docs.python.org/3/library/venv.html
+4. Change your current working directory to your workspace and git clone signal-filter-visualizer: git clone https://github.com/jsantero/signal-filter-visualizer.git
 
-## Requirements:
-* Python3 (tested on version 3.5.2)
-* PyQt5 (tested on version 5.7)
-* numpy (tested on version 1.11.2+mkl)
-* scipy (tested on version 0.18.1)
-* matplotlib (tested on version 1.5.3)
-* kblom (from github)
- * To install: pip install git+https://github.com/kblomqvist/kblom.py.git
+5. Install signal-filter-visualizer (editable): pip install --process-dependency-links -e signal-filter-visualizer
 
-## Running the program
+# Running the program
 > python signal_filter_visualizer.py
 
-## Common problems
-*I have problems installing a package with pip*
-
-Sometimes pip cannot find the correct package that you want. Instead of
-downloading the package through pip, you can usually find a wheel file (.whl)
-from a non-standard host, and install it from the file with pip. For example,
-website listing Python packages is located at
-http://www.lfd.uci.edu/~gohlke/pythonlibs/. Use it at your own risk.
+# Common problems
 
 *I cannot get the program running on Linux*
 
