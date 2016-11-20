@@ -10,7 +10,6 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        "PyQt5",  # creates trouble with Anaconda because its package is named as pyqt
         "numpy",
         "scipy",
         "matplotlib",
