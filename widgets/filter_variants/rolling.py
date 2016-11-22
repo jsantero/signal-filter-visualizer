@@ -56,13 +56,13 @@ class Rolling(QWidget):
             samplingRate = None
 
         if _type == 'mean':
-            sma = ts.RollingMean(samplingRate, windowLength)
+            sma = ts.RollingMean(windowLength, samplingRate)
             signal = list(sma.roll(y, end=True))
         elif _type == 'rms':
-            # TODO DO rms
-            signal = None
+            rms = ts.RollingRootMeanSquare(windowLength, samplingRate)
+            signal = list(rms.roll(y, end=True))
         elif _type == 'median':
-            # TODO DO median
-            signal = None
+            m = ts.RollingMedian(windowLength, samplingRate)
+            signal = list(m.roll(y, end=True))
         data = (x, signal)
         return data
