@@ -15,4 +15,4 @@
 
 """
 
-from .file_open_dlg import FileOpenDlg
+from .file_open_dlg import SignalLoaderDlg
