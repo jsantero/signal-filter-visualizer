@@ -1,18 +1,21 @@
 
 
 class ChainElement(object):
-    def __init__(self, data=None):
-        self.input = data
+    def __init__(self, data=(0,0), name=None):
+        self.input_ = data
         self.output = None
         self.function = None
         self.enabled = True
-        #self.update()
+        self.name = name
+
+    def function(self):
+        raise ValueError("ChainElement.function called when it was not set.")
 
     def update(self):
         if self.enabled and self.function:
-            self.output = self.function(self.input)
+            self.output = self.function(self.input_)
         else:
-            self.output = self.input
+            self.output = self.input_
 
 class ChainContainer(object):
     """Contains elements of a signal chain where one element's output is
@@ -25,10 +28,9 @@ class ChainContainer(object):
     def update(self):
         for i in range(len(self.chainList)):
             if i is not 0:
-                self.chainList[i].input = self.chainList[i-1].output
+                self.chainList[i].input_ = self.chainList[i-1].output
             self.chainList[i].update()
 
-    def add(self, data):
-        element = ChainElement(data)
+    def add(self, element):
         self.chainList.append(element)
         self.update()

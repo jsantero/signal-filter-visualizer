@@ -45,24 +45,27 @@ class Rolling(QWidget):
     def updateUi(self):
         self.valuesChanged.emit()
 
+    def returnFunction(self):
+        self._type = self.filterTypes[self.typeComboBox.currentText()]
+        self.samplingRate = self.samplingRateBox.value()
+        self.windowLength = self.windowLengthBox.value()
+        return self.filter
+
     def filter(self, data):
-        if not data:
+        if not data or data[0] is 0 or data[1] is 0:
             return None
         x, y = data
-        _type = self.filterTypes[self.typeComboBox.currentText()]
-        samplingRate = self.samplingRateBox.value()
-        windowLength = self.windowLengthBox.value()
-        if samplingRate is 0:
-            samplingRate = None
+        if self.samplingRate is 0:
+            self.samplingRate = None
 
-        if _type == 'mean':
-            sma = ts.RollingMean(windowLength, samplingRate)
+        if self._type == 'mean':
+            sma = ts.RollingMean(self.windowLength, self.samplingRate)
             signal = list(sma.roll(y, end=True))
-        elif _type == 'rms':
-            rms = ts.RollingRootMeanSquare(windowLength, samplingRate)
+        elif self._type == 'rms':
+            rms = ts.RollingRootMeanSquare(self.windowLength, self.samplingRate)
             signal = list(rms.roll(y, end=True))
-        elif _type == 'median':
-            m = ts.RollingMedian(windowLength, samplingRate)
+        elif self._type == 'median':
+            m = ts.RollingMedian(self.windowLength, self.samplingRate)
             signal = list(m.roll(y, end=True))
         data = (x, signal)
         return data

@@ -1,8 +1,12 @@
+import os.path
+
 import numpy as np
 
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+
+from visualizer.classes.signalchain import ChainElement
 
 class SignalLoaderDlg(QDialog):
 
@@ -11,11 +15,12 @@ class SignalLoaderDlg(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.setWindowTitle("Load File")
+
         self.fileDlg = QFileDialog(self)
         selectButton = QPushButton("Load file")
         self.fileBox = QLabel()
         sampleRateLabel = QLabel("Samplerate")
-        loadButton = QPushButton("Load file")
 
         buttonBox = QDialogButtonBox(QDialogButtonBox.Ok|
                                      QDialogButtonBox.Cancel)
@@ -27,17 +32,15 @@ class SignalLoaderDlg(QDialog):
         self.sampleRateBox.setValue(100)
 
         selectButton.clicked.connect(self.selectPressed)
-        loadButton.clicked.connect(self.loadPressed)
-        buttonBox.accepted.connect(self.accept)
-        buttonbox.rejected.connect(self.reject)
+        buttonBox.accepted.connect(self.loadFile)
+        buttonBox.rejected.connect(self.reject)
 
         grid = QGridLayout()
-        grid.addWidget(selectButton, 0, 0)
-        grid.addWidget(self.fileBox, 0, 1)
-        grid.addWidget(sampleRateLabel, 1, 0)
-        grid.addWidget(self.sampleRateBox, 1, 1)
-        grid.addWidget(loadButton, 2, 0)
-        grid.addWidget(buttonBox, 3, 0, 1, 2)
+        grid.addWidget(sampleRateLabel, 0, 0)
+        grid.addWidget(self.sampleRateBox, 0, 1)
+        grid.addWidget(selectButton, 1, 0)
+        grid.addWidget(self.fileBox, 1, 1)
+        grid.addWidget(buttonBox, 2, 0, 1, 2)
         self.setLayout(grid)
         self.layout().setSizeConstraint(QLayout.SetFixedSize)
 
@@ -45,7 +48,6 @@ class SignalLoaderDlg(QDialog):
         if self.fileDlg.exec_():
             filenames = self.fileDlg.selectedFiles()
             self.fileBox.setText(filenames[0])
-            self.loadFile()
 
     def loadFile(self):
         path = self.fileBox.text()
@@ -56,6 +58,14 @@ class SignalLoaderDlg(QDialog):
             t = samples / sampleRate
             x = np.linspace(0, t, samples)
             self.data = (x, y)
+            name = os.path.basename(path)
+            def function(input_):
+                return (x, y)
+            data = (0, 0)
+            self.newElement = ChainElement(data=data, name=name)
+            self.newElement.function = function
+            self.newElement.update()
+            self.accept()
             #self.signalReady.emit(data)
         except ValueError as e:
             print("File parse error: {}".format(e))

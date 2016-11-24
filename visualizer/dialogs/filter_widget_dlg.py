@@ -11,11 +11,9 @@ from .filter_variants import Cheby1
 from .filter_variants import Cheby2
 from .filter_variants import Elliptic
 from .filter_variants import Rolling
+from visualizer.classes.signalchain import ChainElement
 
-
-class Filter(QWidget):
-
-    signalFiltered = pyqtSignal(tuple)
+class FilterDlg(QDialog):
 
     def __init__(self, parent=None):
         super().__init__()
@@ -48,43 +46,36 @@ class Filter(QWidget):
 
         filterLabel = QLabel("Filter")
         self.filterComboBox = QComboBox()
+        filterLabel.setBuddy(self.filterComboBox)
         filters = sorted(self.filterDispatcher.keys())
         self.filterComboBox.addItems(filters)
 
-        filterLabel.setBuddy(self.filterComboBox)
+        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok|
+                                     QDialogButtonBox.Cancel)
+        buttonBox.button(QDialogButtonBox.Ok).setDefault(True)
 
         self.filterComboBox.currentIndexChanged.connect(self.changeFilter)
-        butter.valuesChanged.connect(self.updateUi)
-        bessel.valuesChanged.connect(self.updateUi)
-        cheby1.valuesChanged.connect(self.updateUi)
-        cheby2.valuesChanged.connect(self.updateUi)
-        elliptic.valuesChanged.connect(self.updateUi)
-        rolling.valuesChanged.connect(self.updateUi)
+        buttonBox.accepted.connect(self.acceptFilter)
+        buttonBox.rejected.connect(self.reject)
 
         grid = QGridLayout()
         grid.addWidget(filterLabel, 0, 0, 1, 1)
         grid.addWidget(self.filterComboBox, 0, 1, 1, 1)
         grid.addWidget(self.stackedWidget, 1, 0, 1, 2)
+        grid.addWidget(buttonBox, 2, 0, 1, 2)
         self.setLayout(grid)
         self.layout().setSizeConstraint(QLayout.SetFixedSize)
-
-        self.latestData = None
 
     def changeFilter(self):
         selectedFilter = self.filterDispatcher[
             self.filterComboBox.currentText()]
         self.stackedWidget.setCurrentWidget(selectedFilter)
-        self.updateUi()
 
-    def updateUi(self):
-        if self.latestData:
-            self.applyFilter(self.latestData)
+    def acceptFilter(self):
+        currentlySelected = self.stackedWidget.currentWidget()
+        function = currentlySelected.returnFunction()
 
-    def applyFilter(self, data):
-        if data and data[0] is not 0 and data[1] is not 0:
-            self.latestData = data
-            currentlySelected = self.stackedWidget.currentWidget()
-            # Each filter has separately defined filter-method
-            data = currentlySelected.filter(self.latestData)
-        else: data = (0,0)
-        self.signalFiltered.emit(data)
+        self.newElement = ChainElement(name="Filter")
+        self.newElement.function = function
+        self.newElement.update()
+        self.accept()

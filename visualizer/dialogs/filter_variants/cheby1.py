@@ -5,7 +5,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-class Bessel(QWidget):
+class Cheby1(QWidget):
 
     filterTypes = {'Low-pass': 'lowpass', 'High-pass':'highpass',
                    'Band-pass': 'bandpass', 'Band-stop': 'bandstop'}
@@ -16,6 +16,7 @@ class Bessel(QWidget):
 
         typeLabel = QLabel("Type")
         orderLabel = QLabel("Order")
+        rippleLabel = QLabel("Max Ripple")
         lowCutoffLabel = QLabel("Low Cutoff")
         highCutoffLabel = QLabel("High Cutoff")
 
@@ -24,6 +25,10 @@ class Bessel(QWidget):
         self.orderBox = QSpinBox()
         self.orderBox.setRange(1, 10)
         self.orderBox.setValue(4)
+        self.rippleBox = QDoubleSpinBox()
+        self.rippleBox.setRange(0.01, 1000000000.0)
+        self.rippleBox.setValue(3.0)
+        self.rippleBox.setSuffix(" dB")
         self.lowCutoffBox = QDoubleSpinBox()
         self.lowCutoffBox.setRange(0.0, 1000000000.0)
         self.lowCutoffBox.setValue(50)
@@ -35,18 +40,21 @@ class Bessel(QWidget):
 
         self.typeComboBox.currentIndexChanged.connect(self.updateUi)
         self.orderBox.valueChanged.connect(self.updateUi)
+        self.rippleBox.valueChanged.connect(self.updateUi)
         self.lowCutoffBox.valueChanged.connect(self.updateUi)
         self.highCutoffBox.valueChanged.connect(self.updateUi)
 
         grid = QGridLayout()
         grid.addWidget(typeLabel, 1, 0)
         grid.addWidget(orderLabel, 2, 0)
-        grid.addWidget(lowCutoffLabel, 3, 0)
-        grid.addWidget(highCutoffLabel, 4, 0)
+        grid.addWidget(rippleLabel, 3, 0)
+        grid.addWidget(lowCutoffLabel, 4, 0)
+        grid.addWidget(highCutoffLabel, 5, 0)
         grid.addWidget(self.typeComboBox, 1, 1)
         grid.addWidget(self.orderBox, 2, 1)
-        grid.addWidget(self.lowCutoffBox, 3, 1)
-        grid.addWidget(self.highCutoffBox, 4, 1)
+        grid.addWidget(self.rippleBox, 3, 1)
+        grid.addWidget(self.lowCutoffBox, 4, 1)
+        grid.addWidget(self.highCutoffBox, 5, 1)
         self.setLayout(grid)
 
         self.updateUi()
@@ -64,32 +72,38 @@ class Bessel(QWidget):
             self.highCutoffBox.setEnabled(True)
         self.valuesChanged.emit()
 
+    def returnFunction(self):
+        self.order = self.orderBox.value()
+        self.maxRipple = self.rippleBox.value()
+        self.lowCutoff = self.lowCutoffBox.value()
+        self.highCutoff = self.highCutoffBox.value()
+        self._type = self.filterTypes[self.typeComboBox.currentText()]
+        return self.filter
+
     def filter(self, data):
-        if not data:
+        if not data or data[0] is 0 or data[1] is 0:
             return None
         x, y = data
-        order = self.orderBox.value()
-        lowCutoff = self.lowCutoffBox.value()
-        highCutoff = self.highCutoffBox.value()
         dataLengthSeconds = max(x) - min(x)
         dataLengthSamples = len(x)
         sampleRate = dataLengthSamples / dataLengthSeconds
-        _type = self.filterTypes[self.typeComboBox.currentText()]
-        if _type in ('bandstop', 'bandpass'):
-            wn = (lowCutoff / (sampleRate/2), highCutoff / (sampleRate/2))
+        if self._type in ('bandstop', 'bandpass'):
+            wn = (self.lowCutoff / (sampleRate/2),
+                  self.highCutoff / (sampleRate/2))
             if wn[0] > 1:
                 wn = (1, wn[1])
             if wn[1] > 1:
                 wn = (wn[0], 1)
-        elif _type == 'highpass':
-            wn = highCutoff / (sampleRate/2)
+        elif self._type == 'highpass':
+            wn = self.highCutoff / (sampleRate/2)
             if wn > 1:
                 wn = 1
-        elif _type == 'lowpass':
-            wn = lowCutoff / (sampleRate/2)
+        elif self._type == 'lowpass':
+            wn = self.lowCutoff / (sampleRate/2)
             if wn > 1:
                 wn = 1
-        coefficients = scipy.signal.bessel(order, wn, _type, output='sos')
+        coefficients = scipy.signal.cheby1(
+            self.order, self.maxRipple, wn, self._type, output='sos')
         try:
             signal = scipy.signal.sosfiltfilt(coefficients, y)
             data = (x, signal)

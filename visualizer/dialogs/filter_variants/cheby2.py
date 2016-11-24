@@ -72,34 +72,38 @@ class Cheby2(QWidget):
             self.highCutoffBox.setEnabled(True)
         self.valuesChanged.emit()
 
+    def returnFunction(self):
+        self.order = self.orderBox.value()
+        self.minAttenuation = self.attenuationBox.value()
+        self.lowCutoff = self.lowCutoffBox.value()
+        self.highCutoff = self.highCutoffBox.value()
+        self._type = self.filterTypes[self.typeComboBox.currentText()]
+        return self.filter
+
     def filter(self, data):
-        if not data:
+        if not data or data[0] is 0 or data[1] is 0:
             return None
         x, y = data
-        order = self.orderBox.value()
-        minAttenuation = self.attenuationBox.value()
-        lowCutoff = self.lowCutoffBox.value()
-        highCutoff = self.highCutoffBox.value()
         dataLengthSeconds = max(x) - min(x)
         dataLengthSamples = len(x)
         sampleRate = dataLengthSamples / dataLengthSeconds
-        _type = self.filterTypes[self.typeComboBox.currentText()]
-        if _type in ('bandstop', 'bandpass'):
-            wn = (lowCutoff / (sampleRate/2), highCutoff / (sampleRate/2))
+        if self._type in ('bandstop', 'bandpass'):
+            wn = (self.lowCutoff / (sampleRate/2),
+                  self.highCutoff / (sampleRate/2))
             if wn[0] > 1:
                 wn = (1, wn[1])
             if wn[1] > 1:
                 wn = (wn[0], 1)
-        elif _type == 'highpass':
-            wn = highCutoff / (sampleRate/2)
+        elif self._type == 'highpass':
+            wn = self.highCutoff / (sampleRate/2)
             if wn > 1:
                 wn = 1
-        elif _type == 'lowpass':
-            wn = lowCutoff / (sampleRate/2)
+        elif self._type == 'lowpass':
+            wn = self.lowCutoff / (sampleRate/2)
             if wn > 1:
                 wn = 1
         coefficients = scipy.signal.cheby2(
-            order, minAttenuation, wn, _type, output='sos')
+            self.order, self.minAttenuation, wn, self._type, output='sos')
         try:
             signal = scipy.signal.sosfiltfilt(coefficients, y)
             data = (x, signal)
