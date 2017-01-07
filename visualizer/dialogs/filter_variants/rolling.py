@@ -7,39 +7,68 @@ from kblom.dsp import timeseries as ts
 class Rolling(QWidget):
 
     filterTypes = {'Mean': 'mean', 'Root-Mean-Square':'rms',
-                   'Median': 'median'}
+                   'Median': 'median', 'Max':'max'}
     valuesChanged = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__()
 
+        instructionLabel = QLabel(
+            "If sampling rate is set as 0, set window length as number of "
+            "samples.\nIf window length is even number, it will be incremented "
+            "by one.\nIf sampling rate is set, specify length as seconds."
+        )
         typeLabel = QLabel("Type")
         samplingRateLabel = QLabel("Sampling Rate")
         windowLengthLabel = QLabel("Window Length")
+
+        line = QFrame()
+        line.setFrameShape(QFrame.HLine)
+        line.setFrameShadow(QFrame.Sunken)
 
         self.typeComboBox = QComboBox()
         self.typeComboBox.addItems(self.filterTypes.keys())
         self.samplingRateBox = QSpinBox()
         self.samplingRateBox.setRange(0, 100000)
-        self.samplingRateBox.setValue(100)
+        self.samplingRateBox.setValue(0)
+        self.oldSampleRate = self.samplingRateBox.value()
         self.samplingRateBox.setSuffix(" Hz")
-        self.windowLengthBox = QSpinBox()
-        self.windowLengthBox.setRange(1, 10000000)
-        self.windowLengthBox.setValue(10)
+        self.windowLengthIntBox = QSpinBox()
+        self.windowLengthIntBox.setRange(1, 10000000)
+        self.windowLengthIntBox.setValue(10)
+        self.windowLengthFloatBox = QDoubleSpinBox()
+        self.windowLengthFloatBox.setRange(0.000000001, 10000000)
+        self.windowLengthFloatBox.setValue(0.1)
+        self.windowLengthFloatBox.setSuffix(" s")
 
         self.typeComboBox.currentIndexChanged.connect(self.updateUi)
-        self.samplingRateBox.valueChanged.connect(self.updateUi)
-        self.windowLengthBox.valueChanged.connect(self.updateUi)
+        self.samplingRateBox.valueChanged.connect(self.updateSampleRate)
+        self.windowLengthIntBox.valueChanged.connect(self.updateUi)
+        self.windowLengthFloatBox.valueChanged.connect(self.updateUi)
 
         grid = QGridLayout()
-        grid.addWidget(typeLabel, 0, 0)
-        grid.addWidget(samplingRateLabel, 1, 0)
-        grid.addWidget(windowLengthLabel, 2, 0)
-        grid.addWidget(self.typeComboBox, 0, 1)
-        grid.addWidget(self.samplingRateBox, 1, 1)
-        grid.addWidget(self.windowLengthBox, 2, 1)
+        grid.addWidget(instructionLabel, 0, 0, 1, 2)
+        grid.addWidget(line, 1, 0, 1, 2)
+        grid.addWidget(typeLabel, 2, 0)
+        grid.addWidget(samplingRateLabel, 3, 0)
+        grid.addWidget(windowLengthLabel, 4, 0)
+        grid.addWidget(self.typeComboBox, 2, 1)
+        grid.addWidget(self.samplingRateBox, 3, 1)
+        grid.addWidget(self.windowLengthIntBox, 4, 1)
+        grid.addWidget(self.windowLengthFloatBox, 4, 1)
+        self.windowLengthFloatBox.hide()
         self.setLayout(grid)
 
+        self.updateUi()
+
+    def updateSampleRate(self):
+        if self.oldSampleRate is 0 and self.samplingRateBox.value() is not 0:
+            self.windowLengthIntBox.hide()
+            self.windowLengthFloatBox.show()
+        elif self.oldSampleRate is not 0 and self.samplingRateBox.value() is 0:
+            self.windowLengthIntBox.show()
+            self.windowLengthFloatBox.hide()
+        self.oldSampleRate = self.samplingRateBox.value()
         self.updateUi()
 
     def updateUi(self):
@@ -48,7 +77,13 @@ class Rolling(QWidget):
     def returnFunction(self):
         self._type = self.filterTypes[self.typeComboBox.currentText()]
         self.samplingRate = self.samplingRateBox.value()
-        self.windowLength = self.windowLengthBox.value()
+        if self.samplingRate is 0:
+            length = self.windowLengthIntBox.value()
+            if (length % 2 == 0):  # Number must be odd for sig. processing
+                length += 1
+            self.windowLength = length
+        else:
+            self.windowLength = self.windowLengthFloatBox.value()
         return self.filter
 
     def filter(self, data):
@@ -67,5 +102,10 @@ class Rolling(QWidget):
         elif self._type == 'median':
             m = ts.RollingMedian(self.windowLength, self.samplingRate)
             signal = list(m.roll(y, end=True))
+        elif self._type == 'max':
+            m = ts.RollingMax(self.windowLength, self.samplingRate)
+            signal = list(m.roll(y, end=True))
+        else:
+            raise ValueError("Filter function {} not found.".format(self._type))
         data = (x, signal)
         return data
