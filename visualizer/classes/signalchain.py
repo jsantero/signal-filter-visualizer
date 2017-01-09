@@ -29,6 +29,8 @@ class ChainContainer(object):
         for i in range(len(self.chainList)):
             if i is not 0:
                 self.chainList[i].input_ = self.chainList[i-1].output
+            else:
+                self.chainList[i].input_ = (0,0)  # Reset input if first elem
             self.chainList[i].update()
 
     def add(self, element):
