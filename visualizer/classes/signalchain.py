@@ -34,3 +34,8 @@ class ChainContainer(object):
     def add(self, element):
         self.chainList.append(element)
         self.update()
+
+    def remove(self, index):
+        if len(self.chainList) > 0:
+            self.chainList.pop(index)
+            self.update()
