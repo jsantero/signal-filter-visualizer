@@ -79,7 +79,8 @@ class Bessel(QWidget):
         dataLengthSamples = len(x)
         sampleRate = dataLengthSamples / dataLengthSeconds
         if self._type in ('bandstop', 'bandpass'):
-            wn = (lowCutoff / (sampleRate/2), self.highCutoff / (sampleRate/2))
+            wn = (self.lowCutoff / (sampleRate/2),
+                     self.highCutoff / (sampleRate/2))
             if wn[0] > 1:
                 wn = (1, wn[1])
             if wn[1] > 1:
