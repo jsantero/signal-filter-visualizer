@@ -77,6 +77,8 @@ class MainWindow(QMainWindow):
 
     def drawGraph(self):
         selectedRow = self.centralWidget.listWidget.currentRow()
+        if selectedRow < 0:  # If list was emptied when it had a row selected
+            return  # If no row is invalid, don't draw anything
         selectedElement = self.centralWidget.container.chainList[selectedRow]
         data = selectedElement.output
         name = selectedElement.name
