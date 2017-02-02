@@ -18,35 +18,27 @@ class FilterDlg(QDialog):
     def __init__(self, parent=None):
         super().__init__()
 
-        # Stacked widget stores simultaneously all different filters but shows
-        # only the one currently selected
-        self.stackedWidget = QStackedWidget()
-        bessel = Bessel()
-        butter = Butter()
-        cheby1 = Cheby1()
-        cheby2 = Cheby2()
-        elliptic = Elliptic()
-        rolling = Rolling()
-        self.stackedWidget.addWidget(bessel)
-        self.stackedWidget.addWidget(butter)
-        self.stackedWidget.addWidget(cheby1)
-        self.stackedWidget.addWidget(cheby2)
-        self.stackedWidget.addWidget(elliptic)
-        self.stackedWidget.addWidget(rolling)
-
-        # Pairs the filter widget to a string so stackedWidget can be updated
         self.filterDispatcher = {
-            'Bessel/Thomson': bessel,
-            'Butterworth': butter,
-            'Chebyshev type I': cheby1,
-            'Chebyshev type II': cheby2,
-            'Elliptic (Cauer)': elliptic,
-            'Rolling window': rolling
+            'Bessel/Thomson': Bessel(),
+            'Butterworth': Butter(),
+            'Chebyshev type I': Cheby1(),
+            'Chebyshev type II': Cheby2(),
+            'Elliptic (Cauer)': Elliptic(),
+            'Rolling window': Rolling()
         }
 
         filterLabel = QLabel("Filter")
         self.filterComboBox = QComboBox()
         filterLabel.setBuddy(self.filterComboBox)
+        # Stacked widget stores simultaneously all different filters but shows
+        # only the one currently selected
+        self.stackedWidget = QStackedWidget()
+
+        for key, value in self.filterDispatcher.items():
+            self.stackedWidget.addWidget(value)
+            value.valuesChanged.connect(self.updateUi)
+
+        # Add filter names in the combobox in alphabetical order
         filters = sorted(self.filterDispatcher.keys())
         self.filterComboBox.addItems(filters)
 
@@ -65,6 +57,9 @@ class FilterDlg(QDialog):
         grid.addWidget(buttonBox, 2, 0, 1, 2)
         self.setLayout(grid)
         self.layout().setSizeConstraint(QLayout.SetFixedSize)
+
+    def updateUi(self):
+        pass
 
     def changeFilter(self):
         selectedFilter = self.filterDispatcher[
