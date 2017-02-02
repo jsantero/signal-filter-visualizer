@@ -41,3 +41,7 @@ class ChainContainer(object):
         if len(self.chainList) > 0:
             self.chainList.pop(index)
             self.update()
+
+    def rename(self, index, name):
+        if len(self.chainList) > 0:
+            self.chainList[index].name = name
