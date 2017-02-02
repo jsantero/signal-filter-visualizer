@@ -2,6 +2,8 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
+import numpy as np
+
 from kblom.dsp import timeseries as ts
 
 class Rolling(QWidget):
@@ -107,5 +109,6 @@ class Rolling(QWidget):
             signal = list(m.roll(y, end=True))
         else:
             raise ValueError("Filter function {} not found.".format(self._type))
+        signal = np.asarray(signal)
         data = (x, signal)
         return data
