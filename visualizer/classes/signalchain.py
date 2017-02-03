@@ -37,6 +37,12 @@ class ChainContainer(object):
         self.chainList.append(element)
         self.update()
 
+    # Get output data of element
+    def getData(self, index=-1):
+        if len(self.chainList) == 0 or len(self.chainList) < index:
+            return (0, 0)
+        return self.chainList[index].output
+
     def remove(self, index):
         if len(self.chainList) > 0:
             self.chainList.pop(index)

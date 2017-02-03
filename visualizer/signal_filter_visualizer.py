@@ -70,10 +70,8 @@ class MainWindow(QMainWindow):
             self.centralWidget.add(element)
 
     def addFilter(self):
-        dlg = FilterDlg()
-        if dlg.exec_():
-            element = dlg.newElement
-            self.centralWidget.add(element)
+        self.addFilterDlg = FilterDlg(self.centralWidget)
+        self.addFilterDlg.show()
 
     def drawGraph(self):
         selectedRow = self.centralWidget.listWidget.currentRow()

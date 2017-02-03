@@ -23,6 +23,10 @@ class ContainerListWidget(QWidget):
         self.container.add(element)
         self.listWidget.addItem(element.name)
 
+    # Get output data of element
+    def getData(self, index=-1):
+        return self.container.getData(index)
+
     def remove(self):
         index = self.listWidget.currentRow()
         self.container.remove(index)
