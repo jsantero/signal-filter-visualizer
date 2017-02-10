@@ -14,6 +14,8 @@ class ChainElement(object):
     def update(self):
         if self.enabled and self.function:
             self.output = self.function(self.input_)
+            if not self.output:
+                self.output = (0, 0)
         else:
             self.output = self.input_
 
@@ -41,7 +43,11 @@ class ChainContainer(object):
     def getData(self, index=-1):
         if len(self.chainList) == 0 or len(self.chainList) < index:
             return (0, 0)
-        return self.chainList[index].output
+        data = self.chainList[index].output
+        if not data:
+            return (0, 0)
+        else:
+            return data
 
     def remove(self, index):
         if len(self.chainList) > 0:

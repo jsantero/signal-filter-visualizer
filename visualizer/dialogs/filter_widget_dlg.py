@@ -35,12 +35,12 @@ class FilterDlg(QDialog):
         # Stacked widget stores simultaneously all different filters but shows
         # only the one currently selected
         self.stackedWidget = QStackedWidget()
-        checkBoxLabel = QLabel("Preview")
-        self.checkBox = QCheckBox()  # For toggling signal preview
-        checkBoxLabel.setBuddy(self.checkBox)
-        self.checkBox.setTristate(False)
-        self.checkBox.setChecked(False)
-        self.checkBox.stateChanged.connect(self.updateUi)
+        previewCheckBoxLabel = QLabel("Preview")
+        self.previewCheckBox = QCheckBox()  # For toggling signal preview
+        previewCheckBoxLabel.setBuddy(self.previewCheckBox)
+        self.previewCheckBox.setTristate(False)
+        self.previewCheckBox.setChecked(False)
+        self.previewCheckBox.stateChanged.connect(self.updateUi)
 
         for key, value in self.filterDispatcher.items():
             self.stackedWidget.addWidget(value)
@@ -55,7 +55,7 @@ class FilterDlg(QDialog):
         buttonBox.button(QDialogButtonBox.Ok).setDefault(True)
 
         self.filterComboBox.currentIndexChanged.connect(self.changeFilter)
-        self.checkBox.stateChanged.connect(self.updateUi)
+        self.previewCheckBox.stateChanged.connect(self.updateUi)
         buttonBox.accepted.connect(self.acceptFilter)
         buttonBox.rejected.connect(self.rejectFilter)
 
@@ -63,8 +63,8 @@ class FilterDlg(QDialog):
         grid.addWidget(filterLabel, 0, 0, 1, 1)
         grid.addWidget(self.filterComboBox, 0, 1, 1, 1)
         grid.addWidget(self.stackedWidget, 1, 0, 1, 2)
-        grid.addWidget(checkBoxLabel, 2, 0, 1, 1)
-        grid.addWidget(self.checkBox, 2, 1, 1, 1)
+        grid.addWidget(previewCheckBoxLabel, 2, 0, 1, 1)
+        grid.addWidget(self.previewCheckBox, 2, 1, 1, 1)
         grid.addWidget(buttonBox, 3, 0, 1, 2)
         self.setLayout(grid)
         self.layout().setSizeConstraint(QLayout.SetFixedSize)
@@ -75,16 +75,17 @@ class FilterDlg(QDialog):
 
     # When filter settings are changed
     def updateUi(self):
-        if self.checkBox.checkState():  # Draw preview of filtered signal
+        if self.previewCheckBox.checkState():  # Draw preview of filtered signal
             currentlySelected = self.stackedWidget.currentWidget()
             function = currentlySelected.returnFunction()
-            data = self.centralWidget.getData()
+            input_data = self.centralWidget.getData()
 
             previewElement = ChainElement(name="Preview")
             previewElement.function = function
-            previewElement.input_ = data
+            previewElement.input_ = input_data
             previewElement.update()
-            data = previewElement.output
+            output_data = previewElement.output
+            data = (*output_data, input_data[1])
             if self.previewPlot:  # PlotWidget created already
                 self.previewPlot.redraw(data)
             else:  # PlotWidget not yet created
